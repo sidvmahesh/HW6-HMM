@@ -40,15 +40,33 @@ class HiddenMarkovModel:
         Returns:
             forward_probability (float): forward probability (likelihood) for the input observed sequence  
         """        
-        
+        #print("observation_states: ", self.observation_states)
+        #print(self.observation_states_dict)
+        #print("hidden states: ", self.hidden_states)
+        #print(self.hidden_states_dict)
+        #print("prior_p", self.prior_p)
+        #print("transition_p", self.transition_p)
+        #print("emission_p", self.emission_p)
+        print(input_observation_states)
+        print("self.emmision_p: ", self.emission_p)
         # Step 1. Initialize variables
-        
-       
+        num_obs = len(input_observation_states)
+        num_states = len(self.hidden_states)
         # Step 2. Calculate probabilities
-
-
+        probs = np.zeros((num_obs, num_states))
+        # Initialize start probabilities
+        for i in range(num_states):
+            print("num_states: ", num_states)
+            print("self.emission_p[i]: ", self.emission_p[i])
+            print("inp", self.observation_states_dict)
+            print("self.emission_p[i][input_observation_states[0]]: ", self.emission_p[i][self.observation_states_dict[input_observation_states[0]]])
+            probs[0, i] = self.prior_p[i] * self.emission_p[i][self.observation_states_dict[input_observation_states[0]]]
+        for t in range(1, num_obs):
+            for j in range(num_states):
+                for i in range(num_states):
+                    probs[t, j] += probs[t-1, i] * self.transition_p[i][j] * self.emission_p[j][self.observation_states_dict[input_observation_states[t]]]
         # Step 3. Return final probability 
-        
+        return np.sum(probs[num_obs - 1, :])
 
 
     def viterbi(self, decode_observation_states: np.ndarray) -> list:
@@ -69,12 +87,32 @@ class HiddenMarkovModel:
         #store probabilities of hidden state at each step 
         viterbi_table = np.zeros((len(decode_observation_states), len(self.hidden_states)))
         #store best path for traceback
-        best_path = np.zeros(len(decode_observation_states))         
-        
-       
-       # Step 2. Calculate Probabilities
+        best_path = np.zeros(len(decode_observation_states))
+        # Step 2. Calculate Probabilities
+        # Step 2: Initialize Variables
+        viterbi_table = [[0.0 for i in range(len(self.hidden_states))] for i in range(len(decode_observation_states))]
+        backpointer = [[0 for i in range(len(self.hidden_states))] for i in range(len(decode_observation_states))]
+        # Step 3: Calculate Probabilities
+        for t in range(len(decode_observation_states)):
+            for s in range(len(self.hidden_states)):
+                if t == 0:
+                    viterbi_table[t][s] = self.prior_p[s] * self.emission_p[s][self.observation_states_dict[decode_observation_states[t]]]
+                else:
+                    max_prob = max(viterbi_table[t-1][prev_s] * self.transition_p[prev_s][s] for prev_s in range(len(self.hidden_states)))
+                    viterbi_table[t][s] = max_prob * self.emission_p[s][self.observation_states_dict[decode_observation_states[t]]]
+                    backpointer[t][s] = max(range(len(self.hidden_states)), key=lambda prev_s: viterbi_table[t-1][prev_s] * self.transition_p[prev_s][s])
 
-            
+        # Step 4: Traceback and Find Best Path
+        best_path_prob = max(viterbi_table[-1])
+        best_path_pointer = max(range(len(self.hidden_states)), key=lambda s: viterbi_table[-1][s])
+        best_path = [best_path_pointer]
+        for t in range(len(decode_observation_states)-1, 0, -1):
+            best_path.insert(0, backpointer[t][best_path[0]])
+
+        # Step 5: Return Best Path
+        #print("before decoding: ", self.hidden_states_dict)
+        return [self.hidden_states_dict[i] for i in best_path]
+
         # Step 3. Traceback 
 
 
