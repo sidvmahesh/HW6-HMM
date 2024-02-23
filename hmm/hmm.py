@@ -47,8 +47,8 @@ class HiddenMarkovModel:
         #print("prior_p", self.prior_p)
         #print("transition_p", self.transition_p)
         #print("emission_p", self.emission_p)
-        print(input_observation_states)
-        print("self.emmision_p: ", self.emission_p)
+        #print(input_observation_states)
+        #print("self.emmision_p: ", self.emission_p)
         # Step 1. Initialize variables
         num_obs = len(input_observation_states)
         num_states = len(self.hidden_states)
@@ -56,10 +56,10 @@ class HiddenMarkovModel:
         probs = np.zeros((num_obs, num_states))
         # Initialize start probabilities
         for i in range(num_states):
-            print("num_states: ", num_states)
-            print("self.emission_p[i]: ", self.emission_p[i])
-            print("inp", self.observation_states_dict)
-            print("self.emission_p[i][input_observation_states[0]]: ", self.emission_p[i][self.observation_states_dict[input_observation_states[0]]])
+            #print("num_states: ", num_states)
+            #print("self.emission_p[i]: ", self.emission_p[i])
+            #print("inp", self.observation_states_dict)
+            #print("self.emission_p[i][input_observation_states[0]]: ", self.emission_p[i][self.observation_states_dict[input_observation_states[0]]])
             probs[0, i] = self.prior_p[i] * self.emission_p[i][self.observation_states_dict[input_observation_states[0]]]
         for t in range(1, num_obs):
             for j in range(num_states):
